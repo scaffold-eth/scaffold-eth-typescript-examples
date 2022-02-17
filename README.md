@@ -1,14 +1,10 @@
 # 🏗 Scaffold-Eth Typescript
 
-## Typescript
+## Alchemy NFT API Example
 
-This is the typescript repo of scaffold.eth. The directories that you'll use are:
+This is an example of how to use the Alchemy NFT API to display NFTs in a wallet. Before running this example, head over to [Alchemy](https://alchemy.io) to create an account and an app. You'll need the app's API key to run this example.
 
-```bash
-packages/vite-app-ts/
-packages/hardhat-ts/
-```
-
+After you've created the Alchemy app, grab the app key, and update `MainPage.tsx`
 ## Quick Start
 
 Running the app
@@ -29,62 +25,16 @@ Running the app
 
    ```bash
    # build hardhat & external contracts types
-   yarn contracts:build 
+   yarn contracts:build
    # deploy your hardhat contracts
    yarn deploy
-   # start vite 
-   yarn start 
+   # start vite
+   yarn start
    ```
 
-## Overview
 
-> everything you need to build on Ethereum! 🚀
+## NFTs
+Enter in any address/ens in the input field to see the owners NFTs. It will parse the metadata of the NFT for the image, title, and description fields. For ENS names, it will use the ens metadata service to get the metadata.
 
-🧪 Quickly experiment with Solidity using a frontend that adapts to your smart contract:
+A limitiation with this example is that you can only see a maximum of 100 NFTs. The Alchemy API does support paging though, if you need it.
 
-![image](https://user-images.githubusercontent.com/2653167/124158108-c14ca380-da56-11eb-967e-69cde37ca8eb.png)
-
-🔏 Edit your smart contract `YourContract.sol` in `packages/hardhat-ts/contracts`
-
-📝 Edit your frontend `MainPage.jsx` in `packages/vite-app-ts/src`
-
-💼 Edit your deployment scripts in `packages/hardhat-ts/deploy`
-
-📱 Open http://localhost:3000 to see the app
-
-
-# 📚 Documentation
-
-Documentation, tutorials, challenges, and many more resources, visit: [docs.scaffoldeth.io](https://docs.scaffoldeth.io)
-
-Eth-hooks documentation is [here](https://scaffold-eth.github.io/eth-hooks/).  Learn how to use the contexts here.
-
-
-# 🔭 Learning Solidity
-
-📕 Read the docs: https://docs.soliditylang.org
-
-📚 Go through each topic from [solidity by example](https://solidity-by-example.org) editing `YourContract.sol` in **🏗 scaffold-eth**
-
-
-# 🏃💨 Speedrun Ethereum
-Register as a builder [here](https://speedrunethereum.com) and start on some of the challenges and build a portfolio.
-
-# 🛠 Buidl
-
-Check out all the [active branches](https://github.com/austintgriffith/scaffold-eth/branches/active), [open issues](https://github.com/austintgriffith/scaffold-eth/issues), and join/fund the 🏰 [BuidlGuidl](https://BuidlGuidl.com)!
-
--  🚤 [Follow the full Ethereum Speed Run](https://medium.com/@austin_48503/%EF%B8%8Fethereum-dev-speed-run-bd72bcba6a4c)
-
-
-# 💌 P.S.
-
-🌍 You need an RPC key for testnets and production deployments, create an [Alchemy](https://www.alchemy.com/) account and replace the value of `ALCHEMY_KEY = xxx` in `packages/react-app/src/constants.js` with your new key.
-
-# 💬 Support Chat
-
-Join the telegram [support chat 💬](https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA) to ask questions and find others building with 🏗 scaffold-eth!
-
----
-
-🙏 Please check out our [Gitcoin grant](https://gitcoin.co/grants/2851/scaffold-eth) too!

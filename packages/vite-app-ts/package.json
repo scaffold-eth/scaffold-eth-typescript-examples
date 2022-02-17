@@ -21,6 +21,7 @@
     "dev:unlink": "yalc remove eth-hooks && yalc remove eth-components"
   },
   "dependencies": {
+    "@alch/alchemy-web3": "^1.2.3",
     "@ant-design/icons": "^4.7.0",
     "@babel/runtime": "^7.16.7",
     "@emotion/react": "^11.7.1",

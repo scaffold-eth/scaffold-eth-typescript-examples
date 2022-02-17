@@ -1,15 +1,13 @@
 import React, { FC, useEffect, useState } from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
-
 import '~~/styles/main-page.css';
-
 import { GenericContract } from 'eth-components/ant/generic-contract';
-import { useContractReader, useBalance, useEthersAdaptorFromProviderOrSigners, useEventListener } from 'eth-hooks';
+import { useBalance, useEthersAdaptorFromProviderOrSigners } from 'eth-hooks';
 import { useEthersContext } from 'eth-hooks/context';
 import { useDexEthPrice } from 'eth-hooks/dapps';
 import { asEthersAdaptor } from 'eth-hooks/functions';
 
-import { MainPageMenu, MainPageContracts, MainPageFooter, MainPageHeader } from './components/main';
+import { MainPageMenu, MainPageFooter, MainPageHeader } from './components/main';
 import { useScaffoldHooksExamples as useScaffoldHooksExamples } from './components/main/hooks/useScaffoldHooksExamples';
 
 import { useBurnerFallback } from '~~/components/main/hooks/useBurnerFallback';
@@ -18,6 +16,17 @@ import { Hints, ExampleUI } from '~~/components/pages';
 import { BURNER_FALLBACK_ENABLED, MAINNET_PROVIDER } from '~~/config/appConfig';
 import { useAppContracts, useConnectAppContracts, useLoadAppContracts } from '~~/config/contractContext';
 import { NETWORKS } from '~~/models/constants/networks';
+
+import { createAlchemyWeb3 } from '@alch/alchemy-web3';
+import { AddressInput } from 'eth-components/ant';
+
+const web3 = createAlchemyWeb3(`https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY`);
+const ensContractAddress = '0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85'; // mainnet
+interface Metadata {
+  title: string;
+  description: string;
+  image: string;
+}
 
 /**
  * ⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️⛳️
@@ -47,6 +56,75 @@ export const Main: FC = () => {
   // if no user is found use a burner wallet on localhost as fallback if enabled
   useBurnerFallback(scaffoldAppProviders, BURNER_FALLBACK_ENABLED);
 
+  const [address, setAddress] = useState('');
+  const [nfts, setNfts] = useState<Metadata[]>([]);
+  useEffect(() => {
+    if (!address) {
+      setNfts([]);
+      return;
+    }
+    let isCanceled = false;
+    const abortController = new AbortController();
+    const getNfts = async (): Promise<void> => {
+      setNfts([]);
+      const adressNfts = await web3.alchemy.getNfts({
+        owner: address,
+      });
+
+      console.log(adressNfts);
+
+      for (let i = 0; i < adressNfts.ownedNfts.length; i++) {
+        if (isCanceled) {
+          return;
+        }
+
+        const nft = adressNfts.ownedNfts[i];
+        const metadata = await web3.alchemy.getNftMetadata({
+          contractAddress: nft.contract.address,
+          tokenId: nft.id.tokenId,
+        });
+
+        if (!metadata.metadata) {
+          continue;
+        }
+
+        // console.log(metadata);
+        let image = metadata.metadata?.image ?? '';
+        let title = metadata.title;
+        let description = metadata.description;
+
+        if (nft.contract.address === ensContractAddress) {
+          // need to use the ens metadata service
+          try {
+            const response = await fetch(
+              `https://metadata.ens.domains/mainnet/${ensContractAddress}/${nft.id.tokenId}`,
+              {
+                signal: abortController.signal,
+              }
+            );
+            const data = (await response.json()) as { image_url: string; name: string; description: string };
+            image = data.image_url;
+            title = data.name;
+            description = data.description;
+          } catch (e) {
+            console.error(e);
+          }
+        }
+
+        setNfts((prev) => [...prev, { title, description, image }]);
+      }
+    };
+    getNfts().then(
+      () => {},
+      () => {}
+    );
+
+    return () => {
+      isCanceled = true;
+      abortController.abort();
+    };
+  }, [address]);
+
   // -----------------------------
   // Load Contracts
   // -----------------------------
@@ -75,15 +153,15 @@ export const Main: FC = () => {
   const mainnetDai = useAppContracts('DAI', NETWORKS.mainnet.chainId);
 
   // keep track of a variable from the contract in the local React state:
-  const [purpose, update] = useContractReader(
-    yourContract,
-    yourContract?.purpose,
-    [],
-    yourContract?.filters.SetPurpose()
-  );
+  // const [purpose, update] = useContractReader(
+  //   yourContract,
+  //   yourContract?.purpose,
+  //   [],
+  //   yourContract?.filters.SetPurpose()
+  // );
 
   // 📟 Listen for broadcast events
-  const [setPurposeEvents] = useEventListener(yourContract, 'SetPurpose', 0);
+  // const [setPurposeEvents] = useEventListener(yourContract, 'SetPurpose', 0);
 
   // -----------------------------
   // .... 🎇 End of examples
@@ -108,7 +186,24 @@ export const Main: FC = () => {
         <MainPageMenu route={route} setRoute={setRoute} />
         <Switch>
           <Route exact path="/">
-            <MainPageContracts scaffoldAppProviders={scaffoldAppProviders} />
+            <div className="max-w-md mx-auto mt-10">
+              <AddressInput
+                hideScanner={true}
+                ensProvider={scaffoldAppProviders.mainnetAdaptor?.provider}
+                placeholder="Search Address"
+                address={address}
+                onChange={setAddress}
+              />
+            </div>
+            <div className="p-8 pb-40 grid grid-cols-4 gap-4">
+              {nfts.map((nft, i) => (
+                <div key={i} className="border rounded-t-lg shadow-md">
+                  <img className="w-full rounded-t-lg" src={nft.image} />
+                  <div className="m-2 font-bold text-gray-900 truncate">{nft.title}</div>
+                  <div className="m-2 line-clamp-3">{nft.description}</div>
+                </div>
+              ))}
+            </div>
           </Route>
           {/* you can add routes here like the below examlples */}
           <Route path="/hints">
